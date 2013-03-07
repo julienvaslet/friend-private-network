@@ -3,9 +3,30 @@ friend-private-network
 
 Installed on a Raspberry Pi, it installs and configures OpenVPN, DHCP Server and a web application nginx/PHP based. It allows users to be linked to theirs friends LAN with multiple VPNs on a star networks topology.
 
-Versions
+Prerequisites
 --------
-- 0.1 : Installation configures OpenVPN & DHCP Server and the Certificate Authority, new clients must be manually added by copying a template configuration file.
-- 0.2 : Installation provides a web-interface which allows user to add/remove outgoing connections and authorize/revoke incoming connections.
-- 0.3 : Web-inteface has an option to dynamically select unique identifier to avoid conflicts with other networks.
-- 0.4 : Each client network is shared with neighbours in order to make easier the extension of the global network.
+- The Raspberry Pi network interface must be configured on a 192.168.N.0/24 network. N is the unique identifierwhich will be used on VPNs configuration. At this development level, its IP address must be 192.168.N.251.
+- The Raspberry Pi's hostname is used to set the name of the VPN instance.
+- Repositories shall be up-to-date (apt-get update)
+
+Installation
+-------
+Execute the "install.sh" script.
+
+Authorize a new client
+-------
+- Ask for its instance name.
+- Execute the "genclient.sh" script (genclient.sh [instance name])
+- Send to the client following files:
+	- /etc/openvpn/easy-rsa/keys/ca.crt
+	- /etc/openvpn/easy-rsa/keys/[instance name].crt
+	- /etc/openvpn/easy-rsa/keys/[instance name].crt
+
+Connect to a new server
+-------
+- Ask for its instance name and unique identifier.
+- Get generated certificate and its authority certificate.
+	- Move them in /etc/openvpn/[instance name]/
+- Copy the "openvpn-client.conf" to /etc/openvpn/[instance name].conf
+- Edit this file by replacing [ID], [HOSTNAME] and [MY_HOSTNAME] respectively by the server unique identifier, its instance name and your instance name.
+- Restart the VPN daemon (service openvpn restart)

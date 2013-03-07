@@ -138,6 +138,16 @@ then
 	# System ip_forward option
 	echo "IP forward activation..."
 	sysctl -w net.ipv4.ip_forward=1
+
+	# ISC DHCP Server
+	apt-get install isc-dhcp-server
+	if [ $? -eq 0 ]
+	then
+		echo "..."
+	else
+		echo "An error has occured."
+		exit 5
+	fi
 	
 	exit 0
 else
