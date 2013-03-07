@@ -17,6 +17,7 @@ province="Midi-Pyrénées"
 city="Toulouse"
 email="root@$hostname"
 uniqId=$(ifconfig | grep "192.168.[0-9]*.251" | sed 's/.*192\.168\.\([0-9]*\).*/\1/g')
+install_dhcpd=0
 
 # Unique identifier check
 if [ "$uniqId" != "0" ]
@@ -44,6 +45,14 @@ read -p "Do you want to continue? (y/n) "
 
 if [ "$REPLY" = "y" -o "$REPLY" = "Y" ]
 then
+	read -p "Do you want to configure a DHCP server? (y/n) "
+	if [ "$REPLY" = "y" -o "$REPLY" = "Y" ]
+	then
+		install_dhcpd=0
+	else
+		install_dhcpd=1
+	fi
+
 	echo "Please confirm the following certificate authority information: "
 
 	read -p "Country [$country]: "
@@ -140,13 +149,25 @@ then
 	sysctl -w net.ipv4.ip_forward=1
 
 	# ISC DHCP Server
-	apt-get install isc-dhcp-server
-	if [ $? -eq 0 ]
+	if [ $install_dhcpd -eq 0 ]
 	then
-		echo "..."
-	else
-		echo "An error has occured."
-		exit 5
+		apt-get install isc-dhcp-server
+		if [ $? -eq 0 ]
+		then
+			if [ -e "/etc/dhcp/dhcpd.conf" ]
+			then
+				timestamp=$(date +%s)
+				echo "Current DHCP server configuration is saved to /etc/dhcp/dhcpd.conf.$timestamp"
+				mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.$timestamp
+			fi
+
+			cp $basedir/dhcpd.conf /etc/dhcp/dhcpd.conf
+			sed -i "s/\\[ID\\]/$uniqId/g" /etc/dhcp/dhcpd.conf
+			service isc-dhcp-server restart
+		else
+			echo "An error has occured."
+			exit 5
+		fi
 	fi
 	
 	exit 0
