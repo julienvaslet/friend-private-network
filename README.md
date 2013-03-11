@@ -30,3 +30,8 @@ Connect to a new server
 - Copy the "openvpn-client.conf" to /etc/openvpn/[instance name].conf
 - Edit this file by replacing [ID], [HOSTNAME] and [MY_HOSTNAME] respectively by the server unique identifier, its instance name and your instance name.
 - Restart the VPN daemon (service openvpn restart)
+- Add the route with the following command: route add -net 192.168.N.0 netmask 255.255.255.0 gw 10.20.N.1
+- Add theses IPTables rules (/etc/iptables/rules.v4) :
+	- -A FORWARD -s 192.168.N.0/24 -j ACCEPT
+	- -A POSTROUTING -s 192.168.N.0/24 -j MASQUERADE
+- Restart iptables-persistent (service ipstart-persistent restart)
